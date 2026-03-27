@@ -6,34 +6,50 @@
 
 ## 1. Wave 개발 환경
 
-### 1-1. LLVM 설치
+Wave 소스 기준(`llvm/Cargo.toml`)으로 LLVM 21 + Rust 1.86.0 환경이 필요합니다.
+
+### 1-1. LLVM 21 설치 (필수)
 
 ```bash
-sudo apt install -y llvm-14 llvm-14-dev clang-14 libclang-14-dev lld-14 clang
+sudo apt update
+sudo apt install -y wget software-properties-common lsb-release gnupg
+wget https://apt.llvm.org/llvm.sh
+chmod +x llvm.sh
+sudo ./llvm.sh 21
 ```
 
-### 1-2. Rust 설치
+### 1-2. LLVM 환경 변수 설정
 
 ```bash
-sudo apt install rustc cargo
+echo 'export LLVM_SYS_211_PREFIX=/usr/lib/llvm-21' >> ~/.bashrc
+echo 'export LLVM_CONFIG_PATH=/usr/lib/llvm-21/bin/llvm-config' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### 1-3. Rust 1.86.0 설치
+
+```bash
+sudo apt install -y curl build-essential pkg-config libssl-dev ca-certificates
+curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain 1.86.0
+source "$HOME/.cargo/env"
 rustup target add x86_64-unknown-linux-gnu
-rustup default 1.86
+rustup default 1.86.0
 ```
 
-### 1-3. Git 설치
+### 1-4. Python 설치 (`x.py`용)
 
 ```bash
-sudo apt install git
-```
-
-### 1-4. Python 설치
-
-```bash
-sudo apt install python3 python3-pip python3-venv
+sudo apt install -y python3 python3-pip python3-venv python3-tk
 pip install toml
 ```
 
-### 1-5. IDE 설치 
+### 1-5. Git 설치
+
+```bash
+sudo apt install -y git
+```
+
+### 1-6. IDE 설치 (선택)
 
 ```bash
 sudo apt install snapd
@@ -41,11 +57,15 @@ sudo snap install rustrover --classic
 sudo snap install --classic code
 ```
 
-### 1-6. 개발 도구 설치
+### 1-7. 빌드 확인
 
 ```bash
-sudo apt install -y build-essential curl wget zip unzip pkg-config cmake ninja-build \
-lld clang lldb make libssl-dev libffi-dev qemu-system-x86 ovmf vim nano
+cd /mnt/hdd/Wave
+export LLVM_SYS_211_PREFIX=/usr/lib/llvm-21
+export LLVM_CONFIG_PATH=/usr/lib/llvm-21/bin/llvm-config
+llvm-config --version
+rustc --version
+cargo build
 ```
 
 ---
@@ -79,7 +99,7 @@ Whale은 Rust만 설치하면 충분합니다.
 ```bash
 sudo apt install rustc cargo
 rustup target add x86_64-unknown-linux-gnu
-rustup default 1.86
+rustup default 1.86.0
 ```
 
 ### 3-2. Git 설치
@@ -99,7 +119,7 @@ AriaJDK는 Rust + Kotlin을 사용합니다.
 ```bash
 sudo apt install rustc cargo
 rustup target add x86_64-unknown-linux-gnu
-rustup default 1.86
+rustup default 1.86.0
 ```
 
 ### 4-2. Kotlin 환경 설치

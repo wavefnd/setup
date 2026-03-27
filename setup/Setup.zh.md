@@ -6,34 +6,50 @@
 
 ## 1. Wave 开发环境
 
-### 1-1. 安装 LLVM
+根据当前 Wave 源码（`llvm/Cargo.toml`），现在需要 LLVM 21 和 Rust 1.86.0。
+
+### 1-1. 安装 LLVM 21（必需）
 
 ```bash
-sudo apt install -y llvm-14 llvm-14-dev clang-14 libclang-14-dev lld-14 clang
+sudo apt update
+sudo apt install -y wget software-properties-common lsb-release gnupg
+wget https://apt.llvm.org/llvm.sh
+chmod +x llvm.sh
+sudo ./llvm.sh 21
 ```
 
-### 1-2. 安装 Rust
+### 1-2. 配置 LLVM 环境变量
 
 ```bash
-sudo apt install rustc cargo
+echo 'export LLVM_SYS_211_PREFIX=/usr/lib/llvm-21' >> ~/.bashrc
+echo 'export LLVM_CONFIG_PATH=/usr/lib/llvm-21/bin/llvm-config' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### 1-3. 安装 Rust 1.86.0
+
+```bash
+sudo apt install -y curl build-essential pkg-config libssl-dev ca-certificates
+curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain 1.86.0
+source "$HOME/.cargo/env"
 rustup target add x86_64-unknown-linux-gnu
-rustup default 1.86
+rustup default 1.86.0
 ```
 
-### 1-3. 安装 Git
+### 1-4. 安装 Python（用于 `x.py`）
 
 ```bash
-sudo apt install git
-```
-
-### 1-4. 安装 Python
-
-```bash
-sudo apt install python3 python3-pip python3-venv
+sudo apt install -y python3 python3-pip python3-venv python3-tk
 pip install toml
 ```
 
-### 1-5. 安装 IDE
+### 1-5. 安装 Git
+
+```bash
+sudo apt install -y git
+```
+
+### 1-6. 安装 IDE（可选）
 
 ```bash
 sudo apt install snapd
@@ -41,11 +57,15 @@ sudo snap install rustrover --classic
 sudo snap install --classic code
 ```
 
-### 1-6. 安装开发工具
+### 1-7. 验证构建
 
 ```bash
-sudo apt install -y build-essential curl wget zip unzip pkg-config cmake ninja-build \
-lld clang lldb make libssl-dev libffi-dev qemu-system-x86 ovmf vim nano
+cd /mnt/hdd/Wave
+export LLVM_SYS_211_PREFIX=/usr/lib/llvm-21
+export LLVM_CONFIG_PATH=/usr/lib/llvm-21/bin/llvm-config
+llvm-config --version
+rustc --version
+cargo build
 ```
 
 ---
@@ -79,7 +99,7 @@ Whale 仅需安装 Rust 即可。
 ```bash
 sudo apt install rustc cargo
 rustup target add x86_64-unknown-linux-gnu
-rustup default 1.86
+rustup default 1.86.0
 ```
 
 ### 3-2. 安装 Git
@@ -99,7 +119,7 @@ AriaJDK 使用 Rust 和 Kotlin。
 ```bash
 sudo apt install rustc cargo
 rustup target add x86_64-unknown-linux-gnu
-rustup default 1.86
+rustup default 1.86.0
 ```
 
 ### 4-2. 安装 Kotlin 环境

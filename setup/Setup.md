@@ -6,34 +6,50 @@ This document provides instructions to set up the development environment for Wa
 
 ## 1. Wave Development Environment
 
-### 1-1. Install LLVM
+Based on the current Wave source (`llvm/Cargo.toml`), Wave now requires LLVM 21 and Rust 1.86.0.
+
+### 1-1. Install LLVM 21 (Required)
 
 ```bash
-sudo apt install -y llvm-14 llvm-14-dev clang-14 libclang-14-dev lld-14 clang
+sudo apt update
+sudo apt install -y wget software-properties-common lsb-release gnupg
+wget https://apt.llvm.org/llvm.sh
+chmod +x llvm.sh
+sudo ./llvm.sh 21
 ```
 
-### 1-2. Install Rust
+### 1-2. Configure LLVM Environment Variables
 
 ```bash
-sudo apt install rustc cargo
+echo 'export LLVM_SYS_211_PREFIX=/usr/lib/llvm-21' >> ~/.bashrc
+echo 'export LLVM_CONFIG_PATH=/usr/lib/llvm-21/bin/llvm-config' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### 1-3. Install Rust 1.86.0
+
+```bash
+sudo apt install -y curl build-essential pkg-config libssl-dev ca-certificates
+curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain 1.86.0
+source "$HOME/.cargo/env"
 rustup target add x86_64-unknown-linux-gnu
-rustup default 1.86
+rustup default 1.86.0
 ```
 
-### 1-3. Install Git
+### 1-4. Install Python (for `x.py`)
 
 ```bash
-sudo apt install git
-```
-
-### 1-4. Install Python
-
-```bash
-sudo apt install python3 python3-pip python3-venv
+sudo apt install -y python3 python3-pip python3-venv python3-tk
 pip install toml
 ```
 
-### 1-5. Install IDEs
+### 1-5. Install Git
+
+```bash
+sudo apt install -y git
+```
+
+### 1-6. Install IDEs (Optional)
 
 ```bash
 sudo apt install snapd
@@ -41,11 +57,15 @@ sudo snap install rustrover --classic
 sudo snap install --classic code
 ```
 
-### 1-6. Install Development Tools
+### 1-7. Validate Build
 
 ```bash
-sudo apt install -y build-essential curl wget zip unzip pkg-config cmake ninja-build \
-lld clang lldb make libssl-dev libffi-dev qemu-system-x86 ovmf vim nano
+cd /mnt/hdd/Wave
+export LLVM_SYS_211_PREFIX=/usr/lib/llvm-21
+export LLVM_CONFIG_PATH=/usr/lib/llvm-21/bin/llvm-config
+llvm-config --version
+rustc --version
+cargo build
 ```
 
 ---
@@ -79,7 +99,7 @@ Whale only requires Rust.
 ```bash
 sudo apt install rustc cargo
 rustup target add x86_64-unknown-linux-gnu
-rustup default 1.86
+rustup default 1.86.0
 ```
 
 ### 3-2. Install Git
@@ -99,7 +119,7 @@ AriaJDK uses Rust and Kotlin.
 ```bash
 sudo apt install rustc cargo
 rustup target add x86_64-unknown-linux-gnu
-rustup default 1.86
+rustup default 1.86.0
 ```
 
 ### 4-2. Install Kotlin and JDK
