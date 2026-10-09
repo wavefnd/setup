@@ -2,11 +2,13 @@
 
 本文档用于说明如何在 ***Ubuntu 22.04.5 LTS*** 及以上版本中配置 Wave、AOSP、Whale、AriaJDK 的开发环境。
 
+以下命令以 **x86-64 Ubuntu 和 Bash** 为前提。如果只构建 Wave，请按照第 1 节操作；AOSP、Whale 和 AriaJDK 各节是独立的。有关 Linux、macOS 和 Windows 的预编译版本，请参阅 [Wave 安装指南](https://wave-lang.dev/docs/getting-started/install)。
+
 ---
 
 ## 1. Wave 开发环境
 
-根据当前 Wave 源码（`llvm/Cargo.toml`），现在需要 LLVM 21 和 Rust 1.86.0。
+Wave 使用 LLVM 21（[`llvm/Cargo.toml`](https://github.com/wavefnd/Wave/blob/master/llvm/Cargo.toml)）。本指南使用 Rust 1.89.0，与 [Wave CI](https://github.com/wavefnd/Wave/blob/master/tools/ci/toolchains.json) 保持一致。
 
 ### 1-1. 安装 LLVM 21（必需）
 
@@ -16,6 +18,7 @@ sudo apt install -y wget software-properties-common lsb-release gnupg
 wget https://apt.llvm.org/llvm.sh
 chmod +x llvm.sh
 sudo ./llvm.sh 21
+sudo apt install -y llvm-21-dev clang-21 lld-21
 ```
 
 ### 1-2. 配置 LLVM 环境变量
@@ -26,21 +29,23 @@ echo 'export LLVM_CONFIG_PATH=/usr/lib/llvm-21/bin/llvm-config' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-### 1-3. 安装 Rust 1.86.0
+### 1-3. 安装 Rust 1.89.0
 
 ```bash
 sudo apt install -y curl build-essential pkg-config libssl-dev ca-certificates
-curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain 1.86.0
+curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain 1.89.0
 source "$HOME/.cargo/env"
 rustup target add x86_64-unknown-linux-gnu
-rustup default 1.86.0
+rustup default 1.89.0
 ```
 
-### 1-4. 安装 Python（用于 `x.py`）
+### 1-4. 安装 Python（可选，用于 `x.py`）
+
+下面的 Cargo 构建不需要 Python。可选的 `x.py` 工具需要 **Python 3.11 或更高版本**；Ubuntu 22.04 默认的 Python 3.10 不满足要求。使用 `x.py` 前请检查版本；安装 `toml` 包不能替代 Python 的 `tomllib` 模块。
 
 ```bash
-sudo apt install -y python3 python3-pip python3-venv python3-tk
-pip install toml
+sudo apt install -y python3
+python3 --version
 ```
 
 ### 1-5. 安装 Git
@@ -59,14 +64,21 @@ sudo snap install --classic code
 
 ### 1-7. 验证构建
 
+请在打算存放源码的目录中执行以下命令。如果已经克隆了 Wave，请跳过 `git clone` 并进入已有的目录。Rust 版本覆盖设置仅适用于此工作副本。
+
 ```bash
-cd /mnt/hdd/Wave
+git clone https://github.com/wavefnd/Wave.git
+cd Wave
+rustup override set 1.89.0
 export LLVM_SYS_211_PREFIX=/usr/lib/llvm-21
 export LLVM_CONFIG_PATH=/usr/lib/llvm-21/bin/llvm-config
-llvm-config --version
+"$LLVM_CONFIG_PATH" --version
 rustc --version
-cargo build
+cargo build --locked
+./target/debug/wavec --version
 ```
+
+`cargo build --locked` 使用仓库中锁定的依赖版本。开发版编译器位于 `target/debug/wavec`；版本检查命令直接运行该文件，无需全局安装。
 
 ---
 
@@ -142,6 +154,8 @@ sudo apt install git
 ---
 
 ## 5. 使用安装脚本
+
+请从 **setup 仓库的根目录**运行此可选脚本。它会安装全部四个项目的工具，并更改默认 Rust 工具链。对于当前 Wave 源码的要求，请按照上面第 1 节的手动步骤操作。
 
 ```bash
 chmod +x install.sh
