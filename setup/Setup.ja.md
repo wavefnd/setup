@@ -2,11 +2,13 @@
 
 本ドキュメントは、Wave、AOSP、Whale、AriaJDK の開発環境を ***Ubuntu 22.04.5 LTS*** 以上で構築するためのインストール手順です。
 
+以下のコマンドは **x86-64 の Ubuntu と Bash** を前提としています。Wave のみをビルドする場合はセクション 1 を参照してください。AOSP、Whale、AriaJDK の手順は独立しています。Linux、macOS、Windows 向けのビルド済みリリースについては、[Wave インストールガイド](https://wave-lang.dev/docs/getting-started/install)を参照してください。
+
 ---
 
 ## 1. Wave 開発環境
 
-現在の Wave ソース（`llvm/Cargo.toml`）基準では、LLVM 21 と Rust 1.86.0 が必要です。
+Wave は LLVM 21 を使用します（[`llvm/Cargo.toml`](https://github.com/wavefnd/Wave/blob/master/llvm/Cargo.toml)）。このガイドでは [Wave CI](https://github.com/wavefnd/Wave/blob/master/tools/ci/toolchains.json) に合わせて Rust 1.89.0 を使用します。
 
 ### 1-1. LLVM 21 のインストール（必須）
 
@@ -16,6 +18,7 @@ sudo apt install -y wget software-properties-common lsb-release gnupg
 wget https://apt.llvm.org/llvm.sh
 chmod +x llvm.sh
 sudo ./llvm.sh 21
+sudo apt install -y llvm-21-dev clang-21 lld-21
 ```
 
 ### 1-2. LLVM 環境変数の設定
@@ -26,21 +29,23 @@ echo 'export LLVM_CONFIG_PATH=/usr/lib/llvm-21/bin/llvm-config' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-### 1-3. Rust 1.86.0 のインストール
+### 1-3. Rust 1.89.0 のインストール
 
 ```bash
 sudo apt install -y curl build-essential pkg-config libssl-dev ca-certificates
-curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain 1.86.0
+curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain 1.89.0
 source "$HOME/.cargo/env"
 rustup target add x86_64-unknown-linux-gnu
-rustup default 1.86.0
+rustup default 1.89.0
 ```
 
-### 1-4. Python のインストール（`x.py` 用）
+### 1-4. Python のインストール（任意、`x.py` 用）
+
+以下の Cargo ビルドには Python は不要です。任意の補助ツール `x.py` には **Python 3.11 以降**が必要です。Ubuntu 22.04 の標準の Python 3.10 では使用できません。`x.py` を使用する前にバージョンを確認してください。`toml` パッケージをインストールしても Python の `tomllib` モジュールの代わりにはなりません。
 
 ```bash
-sudo apt install -y python3 python3-pip python3-venv python3-tk
-pip install toml
+sudo apt install -y python3
+python3 --version
 ```
 
 ### 1-5. Git のインストール
@@ -59,14 +64,21 @@ sudo snap install --classic code
 
 ### 1-7. ビルド確認
 
+ソースを保存したいディレクトリで実行してください。すでに Wave をクローンしている場合は `git clone` を省略し、そのディレクトリに移動してください。Rust のオーバーライドは、このチェックアウトにのみ適用されます。
+
 ```bash
-cd /mnt/hdd/Wave
+git clone https://github.com/wavefnd/Wave.git
+cd Wave
+rustup override set 1.89.0
 export LLVM_SYS_211_PREFIX=/usr/lib/llvm-21
 export LLVM_CONFIG_PATH=/usr/lib/llvm-21/bin/llvm-config
-llvm-config --version
+"$LLVM_CONFIG_PATH" --version
 rustc --version
-cargo build
+cargo build --locked
+./target/debug/wavec --version
 ```
+
+`cargo build --locked` はリポジトリに記録された依存関係のバージョンを使用します。開発用コンパイラは `target/debug/wavec` に生成されます。バージョン確認コマンドはこの実行ファイルを直接使うため、グローバルインストールは不要です。
 
 ---
 
@@ -142,6 +154,8 @@ sudo apt install git
 ---
 
 ## 5. インストールスクリプトの使い方
+
+この任意のスクリプトは **setup リポジトリのルート**で実行してください。4 つすべてのプロジェクトのツールをインストールし、デフォルトの Rust ツールチェーンを変更します。現在の Wave ソースの要件については、セクション 1 の手動手順に従ってください。
 
 ```bash
 chmod +x install.sh
